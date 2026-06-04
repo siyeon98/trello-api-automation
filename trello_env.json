@@ -1,0 +1,28 @@
+{
+	"id": "c7658abd-db49-488d-9c06-1ee4f9523f9d",
+	"name": "Environment",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "key",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"color": null,
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2026-06-04T09:11:32.574Z",
+	"_postman_exported_using": "Postman/12.13.5"
+}
