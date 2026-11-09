@@ -3,7 +3,7 @@ name: Trello API Tests
 
 on:
   push:
-    branches: [sample]
+    branches: [main]
   workflow_dispatch:
 
 jobs:

@@ -46,7 +46,7 @@ trello-api-automation/
 ├── postman/
 │   ├── trello.postman_collection.json
 │   ├── trello.postman_environment.json
-│   └── trello.local.postman_environment.json
+│   └── trello.local.postman_environment.json  # Local only, Git-ignored
 ├── .gitignore
 └── README.md
 ```
@@ -71,9 +71,11 @@ npm install -g newman
 ### 2. Clone the Repository
 
 ```bash
-git clone -b sample https://github.com/siyeon98/trello-api-test.git
-cd trello-api-test
+git clone https://github.com/siyeon98/trello-api-automation.git
+cd trello-api-automation
 ```
+
+The repository uses `main` as its default branch.
 
 ### 3. Configure the Environment
 
@@ -110,7 +112,7 @@ The final local Newman validation completed successfully:
 | Metric | Result |
 |---|---|
 | Iterations | 1 |
-| Requests | 18 passed, 0 failed |
+| Requests | 18 executed, 0 failed |
 | Test scripts | 36 executed, 0 failed |
 | Pre-request scripts | 27 executed, 0 failed |
 | Assertions | **77 passed, 0 failed** |
@@ -121,7 +123,7 @@ These results represent a verified local run. Actual execution times may vary.
 
 ## Continuous Integration
 
-GitHub Actions automatically runs the Newman test collection when changes are pushed to the `sample` branch.
+GitHub Actions automatically runs the Newman test collection when changes are pushed to the **`main` branch**.
 
 The workflow also supports manual execution through **Actions → Trello API Tests → Run workflow**.
 
@@ -141,7 +143,7 @@ The workflow uses two repository secrets:
 
 **CI status:** A GitHub Actions workflow run has been verified as successful.
 
-[View GitHub Actions runs](https://github.com/siyeon98/trello-api-test/actions)
+[View GitHub Actions runs](https://github.com/siyeon98/trello-api-automation/actions)
 
 ## Security
 
