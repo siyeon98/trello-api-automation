@@ -1,0 +1,44 @@
+
+name: Trello API Tests
+
+on:
+  push:
+    branches: [sample]
+  workflow_dispatch:
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run Trello API tests
+        env:
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_API_TOKEN: ${{ secrets.TRELLO_API_TOKEN }}
+        run: |
+          node -e '
+          const fs = require("fs");
+          const env = JSON.parse(fs.readFileSync("trello_env.json", "utf8"));
+          const values = {
+            base_url: "https://api.trello.com",
+            key: process.env.TRELLO_API_KEY,
+            token: process.env.TRELLO_API_TOKEN
+          };
+          env.values.forEach(v => {
+            if (v.key in values) v.value = values[v.key];
+          });
+          fs.writeFileSync(process.env.RUNNER_TEMP + "/trello_env_ci.json", JSON.stringify(env));
+          '
+
+          newman run trello_api.json -e "$RUNNER_TEMP/trello_env_ci.json"

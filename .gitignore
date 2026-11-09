@@ -1,8 +1,8 @@
+# macOS
 .DS_Store
-.env
-.env.*
-!/.env.example
-trello_env.local.json
+
+# Local Postman environment (contains API credentials)
+*.local.postman_environment.json
 
 # Generated test reports
 reports/
