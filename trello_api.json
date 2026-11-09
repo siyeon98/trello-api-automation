@@ -13,50 +13,19 @@
         {
           "listen": "test",
           "script": {
-            "exec": [
-              "// Parse the response body",
-              "const jsonData = pm.response.json();",
-              "",
-              "// Validate HTTP Status Code",
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "",
-              "// Check if the board ID exists in the response",
-              "pm.test(\"Check if id exists\", function () {",
-              "    pm.expect(jsonData.id).to.exist;",
-              "});",
-              "",
-              "// Verify that the created Board Name matches the requested name",
-              "pm.test(\"Correct Board Name\", function () {",
-              "    pm.expect(jsonData.name).to.eql(pm.collectionVariables.get(\"boardName\"));",
-              "});",
-              "",
-              "// Save the generated Board ID to collection variable for the next API",
-              "if (pm.response.code === 200 && jsonData.id) {",
-              "    pm.collectionVariables.set(\"boardID\", jsonData.id);",
-              "}"
-            ],
             "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "exec": [
+              "// Parse the response body\nconst jsonData = pm.response.json();\n\n// Validate HTTP Status Code\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\n// Check if the board ID exists in the response\npm.test(\"Check if id exists\", function () {\n    pm.expect(jsonData.id).to.exist;\n});\n\n// Verify that the created Board Name matches the requested name\npm.test(\"Correct Board Name\", function () {\n    pm.expect(jsonData.name).to.eql(pm.collectionVariables.get(\"boardName\"));\n});\n\n// Save the generated Board ID to collection variable for the next API\nif (pm.response.code === 200 && jsonData.id) {\n    pm.collectionVariables.set(\"boardID\", jsonData.id);\n}"
+            ]
           }
         },
         {
           "listen": "prerequest",
           "script": {
-            "exec": [
-              "// Generate a random 3-digit number padded with leading zeros",
-              "const randomNum = Math.floor(Math.random() * 1000)",
-              "  .toString()",
-              "  .padStart(3, '0');",
-              "",
-              "// Save the unique board name to collection variable to prevent conflicts",
-              "pm.collectionVariables.set(\"boardName\", `myboard${randomNum}`);"
-            ],
             "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "exec": [
+              "// Clear the Board ID from the previous run\npm.collectionVariables.unset(\"boardID\");\n\n// Generate a random 3-digit number padded with leading zeros\nconst randomNum = Math.floor(Math.random() * 1000)\n  .toString()\n  .padStart(3, '0');\n\n// Save the unique board name to collection variable to prevent conflicts\npm.collectionVariables.set(\"boardName\", `myboard${randomNum}`);"
+            ]
           }
         }
       ],
@@ -180,50 +149,19 @@
         {
           "listen": "prerequest",
           "script": {
-            "exec": [
-              "// Generate a random 3-digit number padded with leading zeros",
-              "const randomNum = Math.floor(Math.random() * 1000)",
-              "  .toString()",
-              "  .padStart(3, '0');",
-              "",
-              "// Save unique list name to collection variables to avoid data conflicts",
-              "pm.collectionVariables.set(\"listName\", `mylist${randomNum}`);"
-            ],
             "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "exec": [
+              "// Clear the List ID from the previous run\npm.collectionVariables.unset(\"listID\");\n\n// Generate a random 3-digit number padded with leading zeros\nconst randomNum = Math.floor(Math.random() * 1000)\n  .toString()\n  .padStart(3, '0');\n\n// Save the unique list name to collection variable to prevent conflicts\npm.collectionVariables.set(\"listName\", `mylist${randomNum}`);"
+            ]
           }
         },
         {
           "listen": "test",
           "script": {
-            "exec": [
-              "// Parse the response body",
-              "const jsonData = pm.response.json();",
-              "",
-              "// Validate HTTP Status Code",
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "",
-              "// Check if the list ID exists in the response",
-              "pm.test(\"Check if id exists\", function () {",
-              "    pm.expect(jsonData.id).to.exist;",
-              "});",
-              "",
-              "// Verify that the created List Name matches the requested name",
-              "pm.test(\"Correct List Name\", function () {",
-              "    pm.expect(jsonData.name).to.eql(pm.collectionVariables.get(\"listName\"));",
-              "});",
-              "",
-              "// Save the generated List ID to collection variable for the next API",
-              "if (pm.response.code === 200 && jsonData.id) {",
-              "    pm.collectionVariables.set(\"listID\", jsonData.id);",
-              "}"
-            ],
             "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "exec": [
+              "// Parse the response body\nconst jsonData = pm.response.json();\n\n// Validate HTTP Status Code\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\n// Check if the list ID exists in the response\npm.test(\"Check if id exists\", function () {\n    pm.expect(jsonData.id).to.exist;\n});\n\n// Verify that the created List Name matches the requested name\npm.test(\"Correct List Name\", function () {\n    pm.expect(jsonData.name).to.eql(pm.collectionVariables.get(\"listName\"));\n});\n\n// Save the generated List ID to collection variable for the next API\nif (pm.response.code === 200 && jsonData.id) {\n    pm.collectionVariables.set(\"listID\", jsonData.id);\n}"
+            ]
           }
         }
       ],
@@ -344,50 +282,19 @@
         {
           "listen": "prerequest",
           "script": {
-            "exec": [
-              "// Generate a random 3-digit number padded with leading zeros",
-              "const randomNum = Math.floor(Math.random() * 1000)",
-              "  .toString()",
-              "  .padStart(3, '0');",
-              "",
-              "// Save the unique card name to collection variable to prevent conflicts",
-              "pm.collectionVariables.set(\"cardName\", `mycard${randomNum}`);"
-            ],
             "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "exec": [
+              "// Clear the Card ID from the previous run\npm.collectionVariables.unset(\"cardID\");\n\n// Generate a random 3-digit number padded with leading zeros\nconst randomNum = Math.floor(Math.random() * 1000)\n  .toString()\n  .padStart(3, '0');\n\n// Save the unique card name to collection variable to prevent conflicts\npm.collectionVariables.set(\"cardName\", `mycard${randomNum}`);"
+            ]
           }
         },
         {
           "listen": "test",
           "script": {
-            "exec": [
-              "// Parse the response body",
-              "const jsonData = pm.response.json();",
-              "",
-              "// Validate HTTP Status Code",
-              "pm.test(\"Status code is 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "",
-              "// Check if the card ID exists in the response",
-              "pm.test(\"Check if id exists\", function () {",
-              "    pm.expect(jsonData.id).to.exist;",
-              "});",
-              "",
-              "// Verify that the created Card Name matches the requested name",
-              "pm.test(\"Correct Card Name\", function () {",
-              "    pm.expect(jsonData.name).to.eql(pm.collectionVariables.get(\"cardName\"));",
-              "});",
-              "",
-              "// Save the generated Card ID to collection variable for the next API",
-              "if (pm.response.code === 200 && jsonData.id) {",
-              "    pm.collectionVariables.set(\"cardID\", jsonData.id);",
-              "}"
-            ],
             "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "exec": [
+              "// Parse the response body\nconst jsonData = pm.response.json();\n\n// Validate HTTP Status Code\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\n// Check if the card ID exists in the response\npm.test(\"Check if id exists\", function () {\n    pm.expect(jsonData.id).to.exist;\n});\n\n// Verify that the created Card Name matches the requested name\npm.test(\"Correct Card Name\", function () {\n    pm.expect(jsonData.name).to.eql(pm.collectionVariables.get(\"cardName\"));\n});\n\n// Save the generated Card ID to collection variable for the next API\nif (pm.response.code === 200 && jsonData.id) {\n    pm.collectionVariables.set(\"cardID\", jsonData.id);\n}"
+            ]
           }
         }
       ],
@@ -1304,25 +1211,21 @@
     {
       "listen": "prerequest",
       "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "requests": {},
         "exec": [
           "console.log(pm.environment.name)"
-        ]
+        ],
+        "type": "text/javascript"
       }
     },
     {
       "listen": "test",
       "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "requests": {},
         "exec": [
-          "pm.test(\"Response time is less than 1000ms\", function () {",
+          "pm.test(\"Response time is less than 2000ms\", function () {",
           "    pm.expect(pm.response.responseTime).to.be.below(2000);",
           "});"
-        ]
+        ],
+        "type": "text/javascript"
       }
     }
   ],
