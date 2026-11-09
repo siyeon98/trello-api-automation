@@ -29,16 +29,27 @@ jobs:
         run: |
           node -e '
           const fs = require("fs");
-          const env = JSON.parse(fs.readFileSync("trello_env.json", "utf8"));
+
+          const env = JSON.parse(
+            fs.readFileSync("postman/trello.postman_environment.json", "utf8")
+          );
+
           const values = {
             base_url: "https://api.trello.com",
             key: process.env.TRELLO_API_KEY,
             token: process.env.TRELLO_API_TOKEN
           };
-          env.values.forEach(v => {
-            if (v.key in values) v.value = values[v.key];
-          });
-          fs.writeFileSync(process.env.RUNNER_TEMP + "/trello_env_ci.json", JSON.stringify(env));
+
+          for (const variable of env.values) {
+            if (variable.key in values) {
+              variable.value = values[variable.key];
+            }
+          }
+
+          fs.writeFileSync(
+            process.env.RUNNER_TEMP + "/trello_env_ci.json",
+            JSON.stringify(env)
+          );
           '
 
-          newman run trello_api.json -e "$RUNNER_TEMP/trello_env_ci.json"
+          newman run postman/trello.postman_collection.json -e "$RUNNER_TEMP/trello_env_ci.json"
