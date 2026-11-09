@@ -1,0 +1,8 @@
+.DS_Store
+.env
+.env.*
+!/.env.example
+trello_env.local.json
+
+# Generated test reports
+reports/
