@@ -6,7 +6,7 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: '17 23 * * *'
+    - cron: '*/15 * * * *'
       timezone: 'Asia/Seoul'
 
 jobs:
@@ -123,11 +123,37 @@ jobs:
               f"{os.environ['GITHUB_RUN_ID']}"
           )
 
-          lines = [
-              f"{'✅' if status == 'success' else '❌'} "
-              f"Trello API Tests — {status.upper()}",
-              f"Trigger: {os.environ['GITHUB_EVENT_NAME']}",
+          success = status == "success"
+          symbol = "✅" if success else "❌"
+          label = "PASSED" if success else "FAILED"
+
+          trigger_names = {
+              "push": "Push",
+              "schedule": "Scheduled",
+              "workflow_dispatch": "Manual",
+          }
+          event_name = os.environ["GITHUB_EVENT_NAME"]
+          trigger = trigger_names.get(event_name, event_name)
+
+          def field(title, value):
+              return {
+                  "type": "mrkdwn",
+                  "text": f"*{title}*\n{value}"
+              }
+
+          blocks = [
+              {
+                  "type": "header",
+                  "text": {
+                      "type": "plain_text",
+                      "text": f"{symbol} Trello API Tests — {label}"
+                  }
+              }
           ]
+
+          fields = [field("Trigger", trigger)]
+          failures = []
+          report_message = None
 
           if report.is_file():
               try:
@@ -135,7 +161,6 @@ jobs:
                   suites = root.findall(".//testsuite")
                   cases = root.findall(".//testcase")
 
-                  failures = []
                   skipped = 0
 
                   for suite in suites:
@@ -156,54 +181,111 @@ jobs:
 
                   passed = len(cases) - len(failures) - skipped
 
-                  lines.extend([
-                      f"API Requests: {len(suites)}",
-                      f"Assertions: {passed} passed · "
-                      f"{len(failures)} failed · {skipped} skipped",
+                  fields.extend([
+                      field("API Requests", str(len(suites))),
+                      field(
+                          "Assertions",
+                          f"{passed} passed · "
+                          f"{len(failures)} failed · "
+                          f"{skipped} skipped"
+                      )
                   ])
 
                   duration = root.get("time")
                   if duration is not None:
-                      lines.append(f"Test Duration: {float(duration):.2f}s")
+                      fields.append(
+                          field("Duration", f"{float(duration):.2f}s")
+                      )
 
-                  if failures:
-                      lines.append("")
-                      lines.append(f"Failed Assertions ({len(failures)}):")
-
-                      for index, failure in enumerate(failures[:10], 1):
-                          lines.append(f"{index}. {failure}")
-
-                      remaining = len(failures) - 10
-                      if remaining > 0:
-                          lines.append(f"...and {remaining} more failures")
-
-              except (ET.ParseError, ValueError) as exc:
-                  lines.append(
-                      f"Test report unavailable: {type(exc).__name__}"
+              except (ET.ParseError, ValueError):
+                  report_message = (
+                      "Test report could not be parsed. "
+                      "Check workflow logs."
                   )
           else:
-              lines.append(
-                  "Test report unavailable — check workflow logs."
+              report_message = (
+                  "Test report unavailable. Check workflow logs."
               )
 
-          lines.append(f"GitHub Actions Run: {run_url}")
+          blocks.append({
+              "type": "section",
+              "fields": fields
+          })
+
+          if failures:
+              items = []
+
+              for index, failure in enumerate(failures[:10], 1):
+                  safe_name = (
+                      failure.replace("&", "&amp;")
+                             .replace("<", "&lt;")
+                             .replace(">", "&gt;")
+                  )
+                  items.append(f"{index}. {safe_name}")
+
+              remaining = len(failures) - 10
+              if remaining > 0:
+                  items.append(
+                      f"...and {remaining} more failures"
+                  )
+
+              blocks.append({
+                  "type": "section",
+                  "text": {
+                      "type": "mrkdwn",
+                      "text": (
+                          f"*Failed Assertions ({len(failures)})*\n"
+                          + "\n".join(items)
+                      )
+                  }
+              })
+
+          if report_message:
+              blocks.append({
+                  "type": "section",
+                  "text": {
+                      "type": "mrkdwn",
+                      "text": report_message
+                  }
+              })
+
+          blocks.extend([
+              {"type": "divider"},
+              {
+                  "type": "actions",
+                  "elements": [
+                      {
+                          "type": "button",
+                          "text": {
+                              "type": "plain_text",
+                              "text": "View GitHub Actions Run"
+                          },
+                          "url": run_url,
+                          "action_id": "view_test_run"
+                      }
+                  ]
+              }
+          ])
 
           webhook = os.environ.get("SLACK_WEBHOOK_URL")
           if not webhook:
               raise RuntimeError("SLACK_WEBHOOK_URL is not configured")
 
-          payload = json.dumps(
-              {"text": "\n".join(lines)}
-          ).encode("utf-8")
+          payload = {
+              "text": f"{symbol} Trello API Tests — {label}",
+              "blocks": blocks
+          }
 
           request = urllib.request.Request(
               webhook,
-              data=payload,
+              data=json.dumps(payload).encode("utf-8"),
               headers={"Content-Type": "application/json"},
-              method="POST",
+              method="POST"
           )
 
-          with urllib.request.urlopen(request, timeout=15) as response:
+          with urllib.request.urlopen(
+              request, timeout=15
+          ) as response:
               print(
                   f"Slack notification sent: HTTP {response.status}"
               )
