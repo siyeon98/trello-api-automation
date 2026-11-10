@@ -100,3 +100,111 @@ jobs:
           path: ${{ runner.temp }}/newman-results.xml
           if-no-files-found: error
           retention-days: 7
+
+      - name: Notify Slack
+        if: ${{ always() }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          status = os.environ["JOB_STATUS"]
+          report = Path(os.environ["RUNNER_TEMP"]) / "newman-results.xml"
+
+          run_url = (
+              f"{os.environ['GITHUB_SERVER_URL']}/"
+              f"{os.environ['GITHUB_REPOSITORY']}/actions/runs/"
+              f"{os.environ['GITHUB_RUN_ID']}"
+          )
+
+          lines = [
+              f"{'✅' if status == 'success' else '❌'} "
+              f"Trello API Tests — {status.upper()}",
+              f"Trigger: {os.environ['GITHUB_EVENT_NAME']}",
+          ]
+
+          if report.is_file():
+              try:
+                  root = ET.parse(report).getroot()
+                  suites = root.findall(".//testsuite")
+                  cases = root.findall(".//testcase")
+
+                  failures = []
+                  skipped = 0
+
+                  for suite in suites:
+                      request_name = suite.get("name", "Unknown request")
+
+                      for case in suite.findall("testcase"):
+                          if case.find("skipped") is not None:
+                              skipped += 1
+
+                          if (
+                              case.find("failure") is not None
+                              or case.find("error") is not None
+                          ):
+                              failures.append(
+                                  f"{request_name} — "
+                                  f"{case.get('name', 'Unknown assertion')}"
+                              )
+
+                  passed = len(cases) - len(failures) - skipped
+
+                  lines.extend([
+                      f"API Requests: {len(suites)}",
+                      f"Assertions: {passed} passed · "
+                      f"{len(failures)} failed · {skipped} skipped",
+                  ])
+
+                  duration = root.get("time")
+                  if duration is not None:
+                      lines.append(f"Test Duration: {float(duration):.2f}s")
+
+                  if failures:
+                      lines.append("")
+                      lines.append(f"Failed Assertions ({len(failures)}):")
+
+                      for index, failure in enumerate(failures[:10], 1):
+                          lines.append(f"{index}. {failure}")
+
+                      remaining = len(failures) - 10
+                      if remaining > 0:
+                          lines.append(f"...and {remaining} more failures")
+
+              except (ET.ParseError, ValueError) as exc:
+                  lines.append(
+                      f"Test report unavailable: {type(exc).__name__}"
+                  )
+          else:
+              lines.append(
+                  "Test report unavailable — check workflow logs."
+              )
+
+          lines.append(f"GitHub Actions Run: {run_url}")
+
+          webhook = os.environ.get("SLACK_WEBHOOK_URL")
+          if not webhook:
+              raise RuntimeError("SLACK_WEBHOOK_URL is not configured")
+
+          payload = json.dumps(
+              {"text": "\n".join(lines)}
+          ).encode("utf-8")
+
+          request = urllib.request.Request(
+              webhook,
+              data=payload,
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+
+          with urllib.request.urlopen(request, timeout=15) as response:
+              print(
+                  f"Slack notification sent: HTTP {response.status}"
+              )
+          PY
