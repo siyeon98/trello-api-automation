@@ -55,4 +55,48 @@ jobs:
           );
           '
 
-          newman run postman/trello.postman_collection.json -e "$RUNNER_TEMP/trello_env_ci.json"
+          newman run postman/trello.postman_collection.json \
+            -e "$RUNNER_TEMP/trello_env_ci.json" \
+            -r cli,junit \
+            --reporter-junit-export "$RUNNER_TEMP/newman-results.xml"
+
+      - name: Check report for credentials
+        id: report_safety
+        if: always()
+        env:
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_API_TOKEN: ${{ secrets.TRELLO_API_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+
+          report = Path(os.environ["RUNNER_TEMP"]) / "newman-results.xml"
+
+          if not report.is_file():
+              print("Report was not generated.")
+              sys.exit(1)
+
+          content = report.read_bytes()
+
+          for name in ("TRELLO_API_KEY", "TRELLO_API_TOKEN"):
+              secret = os.environ.get(name, "")
+              if not secret:
+                  print(f"Missing secret: {name}")
+                  sys.exit(1)
+              if secret.encode() in content:
+                  print(f"Credential detected in report: {name}")
+                  sys.exit(1)
+
+          print("Credential check passed.")
+          PY
+
+      - name: Upload Newman test report
+        if: ${{ always() && steps.report_safety.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-test-results
+          path: ${{ runner.temp }}/newman-results.xml
+          if-no-files-found: error
+          retention-days: 7
