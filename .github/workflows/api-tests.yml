@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '17 23 * * *'
+      timezone: 'Asia/Seoul'
 
 jobs:
   api-tests:
