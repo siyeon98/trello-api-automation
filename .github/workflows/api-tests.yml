@@ -6,7 +6,7 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: '42 13 * * *'
+    - cron: '17 23 * * *'
       timezone: 'Asia/Seoul'
 
 jobs:
