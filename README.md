@@ -136,7 +136,7 @@ GitHub Actions executes the Newman collection on a GitHub-hosted Ubuntu runner.
 | --- | --- |
 | Push | Automatically runs on pushes to `main` |
 | Manual | GitHub Actions → Trello API Tests → Run workflow |
-| Scheduled | Configured daily at 23:17 Asia/Seoul |
+| Scheduled | Configured daily at 03:23 Asia/Seoul |
 
 ### Workflow Steps
 
@@ -173,7 +173,6 @@ When JUnit XML results are unavailable, the notification provides the workflow s
 
 - **Test isolation:** The collection relies on ordered execution and shared resource IDs rather than independently isolated tests.
 - **Response-time threshold:** The 2,000 ms assertion is project-defined, not a Trello service-level agreement. Network latency may affect results.
-- **Scheduled execution:** Successful scheduled runs were observed, but consistent execution at the restored daily schedule has not been verified.
 - **Test coverage:** Additional negative and boundary scenarios could improve coverage.
 - **Resource cleanup:** Cleanup reliability could be improved for interrupted or partially failed executions.
 
@@ -181,11 +180,7 @@ When JUnit XML results are unavailable, the notification provides the workflow s
 
 ### Scheduled Workflow Timing
 
-**Issue:** During validation with a temporary 15-minute schedule, GitHub Actions did not execute consistently at the configured intervals.
-
-**Verification:** Two successful scheduled runs were observed approximately four hours apart, both with Slack notifications.
-
-**Current Status:** The workflow was restored to a daily 23:17 Asia/Seoul schedule. Exact execution timing is not guaranteed.
+The workflow is configured to run daily at 03:23 Asia/Seoul. Scheduled runs may start after the configured time. The [November 17, 2026 scheduled run](https://github.com/siyeon98/trello-api-automation/actions/runs/43998951532#artifacts) completed successfully and published the JUnit XML report as the `newman-test-results` artifact.
 
 ## Security
 
