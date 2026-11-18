@@ -1,21 +1,18 @@
 # Trello API Test Automation
 
-A REST API test automation project using **Postman, JavaScript, Newman, and GitHub Actions**, with scheduled execution, JUnit XML reporting, and Slack notifications.
+[English](README.md) · [한국어](README.ko.md)
 
-The project validates Trello Board, List, and Card workflows through automated API requests and assertions designed with reference to the official Trello REST API documentation.
+Automated REST API tests for Trello Board, List, and Card workflows using Postman, JavaScript, and Newman. GitHub Actions provides automated execution, reports, and Slack notifications.
 
-**API & Documentation**
-
-- **API Base URL:** [https://api.trello.com](https://api.trello.com)
-- **Official API Documentation:** [https://developer.atlassian.com/cloud/trello/rest/](https://developer.atlassian.com/cloud/trello/rest/)
+[Trello REST API documentation](https://developer.atlassian.com/cloud/trello/rest/) · [API base URL](https://api.trello.com)
 
 ## Tech Stack
 
 | Category | Technologies |
 | --- | --- |
-| API Testing | Postman, JavaScript |
-| Test Execution | Newman, Node.js |
-| CI/CD | GitHub Actions |
+| Test Automation | Postman, JavaScript |
+| Runtime | Node.js, Newman |
+| CI | GitHub Actions |
 | Reporting | JUnit XML |
 | Workflow Scripting | Python |
 | Notifications | Slack Incoming Webhooks, Block Kit |
@@ -23,172 +20,152 @@ The project validates Trello Board, List, and Card workflows through automated A
 
 ## Test Coverage
 
-The Postman collection contains **18 API requests** covering the lifecycle of Trello Boards, Lists, and Cards.
-
-| Resource | Requests | Test Scenarios |
-| --- | ---: | --- |
+| Resource | Requests | Coverage |
+| --- | --- | --- |
 | Board | 6 | Create, retrieve, update, verify update, delete, verify deletion |
 | List | 6 | Create, retrieve, update, verify update, archive, verify archived state |
 | Card | 6 | Create, retrieve, update, verify update, delete, verify deletion |
-| **Total** | **18** | **CRUD workflows and resource state validation** |
+| **Total** | **18** | Resource lifecycle and state validation |
 
-Assertions verify HTTP status codes, response values, resource IDs, Board–List and List–Card relationships, updated values, archived list status, deleted-resource responses (HTTP 404), and response times below 2,000 ms.
+Assertions cover status codes, response values, resource IDs, Board–List and List–Card relationships, updated values, archived state, HTTP 404 after deletion, and response times below 2,000 ms.
 
 ### Verified Test Results
 
-A verified local Newman execution completed with:
+Results from the [November 17, 2026 manual GitHub Actions run](https://github.com/siyeon98/trello-api-automation/actions/runs/44047663724).
 
 | Metric | Result |
 | --- | --- |
 | Iterations | 1 |
 | API Requests | **18 executed, 0 failed** |
+| Assertions | **77 passed, 0 failed** |
 | Test Scripts | 36 executed, 0 failed |
 | Pre-request Scripts | 27 executed, 0 failed |
-| Assertions | **77 passed, 0 failed** |
-| Total Duration | 6.5 seconds |
-| Average Response Time | 342 ms |
+| Test Execution Duration | 5.2 seconds |
+| Average Response Time | 269 ms |
 
-These results represent a verified local execution. Actual execution times may vary.
+These figures describe this execution. Test duration excludes other workflow steps such as dependency installation and artifact upload. Results and timings may vary between runs.
 
 ## Test Design & Implementation
 
-- **API specification-based testing:** Designed requests and assertions with reference to the official Trello REST API documentation.
-- **Dynamic test data:** Pre-request scripts generate resource names and reset stored IDs before creation requests.
-- **Variable management:** Collection variables pass resource IDs between dependent requests.
-- **Sequential execution:** Requests execute in their defined order to validate complete resource lifecycles.
+- Requests and assertions designed with reference to the official API documentation.
+- Pre-request scripts generate resource names and reset stored IDs before creation requests.
+- Collection variables pass resource IDs between dependent requests.
+- Ordered execution verifies resource lifecycles and final states.
 
 ## Project Structure
 
-```text
-trello-api-automation/
-├── .github/
-│   └── workflows/
-│       └── api-tests.yml
-├── postman/
-│   ├── trello.postman_collection.json
-│   └── trello.postman_environment.json
-├── .gitignore
-└── README.md
-```
-
-The local environment file `postman/trello.local.postman_environment.json` is excluded from version control.
+| Path | Purpose |
+| --- | --- |
+| `.github/workflows/api-tests.yml` | GitHub Actions |
+| `postman/trello.postman_collection.json` | API requests and assertions |
+| `postman/trello.postman_environment.json` | Environment template |
+| `README.md` | English documentation |
+| `README.ko.md` | 한국어 문서 |
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js and npm
-- Trello account with access to a dedicated test workspace
-- Trello API Key and Token
+- Trello account, a dedicated test workspace, API Key, and Token
 
 ### Installation
-
-Clone the repository:
 
 ```bash
 git clone https://github.com/siyeon98/trello-api-automation.git
 cd trello-api-automation
-```
-
-Install Newman:
-
-```bash
 npm install -g newman
 ```
 
 ### Environment Configuration
 
-Create a local environment file from the provided template:
+Copy the environment template and enter your API credentials.
 
 ```bash
 cp postman/trello.postman_environment.json postman/trello.local.postman_environment.json
 ```
 
-Configure the following variables:
-
 | Variable | Value |
 | --- | --- |
 | `base_url` | `https://api.trello.com` |
-| `key` | Your Trello API Key |
-| `token` | Your Trello API Token |
+| `key` | Trello API Key |
+| `token` | Trello API Token |
 
-Do not commit the local environment file or expose API credentials.
+The collection creates, modifies, and deletes real resources. Use a dedicated test workspace.
 
-**Important:** The collection creates, modifies, and deletes real Trello resources. Use a dedicated test workspace rather than production data.
+The local environment file is ignored by Git. Keep credentials out of version control.
 
 ## Running Tests
-
-Run the complete Postman collection:
 
 ```bash
 newman run postman/trello.postman_collection.json -e postman/trello.local.postman_environment.json
 ```
 
-The collection must execute in its defined order because subsequent requests depend on resources created by earlier requests.
+Run the collection in its defined order because later requests depend on resources created by earlier requests.
 
 ## Continuous Integration
 
 GitHub Actions executes the Newman collection on a GitHub-hosted Ubuntu runner.
 
+| Setting | Value |
+| --- | --- |
+| Workflow | Trello API Tests |
+| Job | API Tests |
+| Node.js | `22` |
+
 ### Execution Triggers
 
 | Trigger | Configuration |
 | --- | --- |
-| Push | Automatically runs on pushes to `main` |
+| Push | Pushes to `main` |
 | Manual | GitHub Actions → Trello API Tests → Run workflow |
-| Scheduled | Configured daily at 03:23 Asia/Seoul |
+| Scheduled | Configured daily at 03:23 Asia/Seoul on the default branch |
+
+Scheduled runs may start after the configured time.
+
+A [scheduled run on November 17, 2026](https://github.com/siyeon98/trello-api-automation/actions/runs/43998951532) completed successfully.
 
 ### Workflow Steps
 
-1. Check out the repository and set up Node.js 22.
-2. Install Newman and generate a temporary environment file using GitHub Actions Secrets.
-3. Execute the Postman collection and export JUnit XML results.
+1. Check out the repository and set up Node.js.
+2. Install Newman and generate a temporary environment file from GitHub Actions Secrets.
+3. Run the collection and export JUnit XML results.
 4. Check the report for configured API credential values before artifact upload.
-5. Upload the report and send an execution summary to Slack.
-
-[View GitHub Actions runs](https://github.com/siyeon98/trello-api-automation/actions)
+5. Upload the report and send the execution summary to Slack.
 
 ### Test Reporting
 
 | Setting | Value |
 | --- | --- |
 | Report Format | JUnit XML |
-| Report File | `newman-results.xml` |
 | Artifact Name | `newman-test-results` |
-| Retention Period | 7 days |
+| Retention Period | 30 days |
+| Upload Condition | Upload attempted when the report credential check succeeds |
 
-The report contains assertion results, failure details, and execution duration. It can be downloaded from individual GitHub Actions runs.
+Download generated and uploaded reports from the **Artifacts** section of the corresponding GitHub Actions run.
 
 ### Slack Test Notifications
 
-GitHub Actions sends structured notifications using **Slack Incoming Webhooks and Block Kit**.
+Notifications use Slack Incoming Webhooks and Block Kit. They include the job result, execution trigger, and a link to the run.
 
-Notifications include the job result, execution trigger, API request count, assertion pass/fail/skip counts, execution duration, up to 10 failed assertions, and a link to the GitHub Actions run.
+When JUnit XML results are available, notifications include request counts, assertion pass/fail/skip counts, duration when reported, and up to 10 failed assertions. The notification step uses `always()`.
 
-Successful notification delivery has been verified, including notifications from two scheduled workflow executions.
+If report data is unavailable, the notification includes the job result and run link. Slack delivery failures are recorded as warnings in GitHub Actions and do not fail the job. Test failures still fail the job.
 
-When JUnit XML results are unavailable, the notification provides the workflow status and execution log link.
+Successful Slack delivery has been verified, including scheduled executions.
 
 ## Known Limitations
 
-- **Test isolation:** The collection relies on ordered execution and shared resource IDs rather than independently isolated tests.
-- **Response-time threshold:** The 2,000 ms assertion is project-defined, not a Trello service-level agreement. Network latency may affect results.
-- **Test coverage:** Additional negative and boundary scenarios could improve coverage.
-- **Resource cleanup:** Cleanup reliability could be improved for interrupted or partially failed executions.
-
-## Troubleshooting
-
-### Scheduled Workflow Timing
-
-The workflow is configured to run daily at 03:23 Asia/Seoul. Scheduled runs may start after the configured time. The [November 17, 2026 scheduled run](https://github.com/siyeon98/trello-api-automation/actions/runs/43998951532#artifacts) completed successfully and published the JUnit XML report as the `newman-test-results` artifact.
+- **Test isolation** — requests rely on ordered execution and shared resource IDs.
+- **Response times** — the 2,000 ms threshold is project-defined. Trello has not been established to provide this threshold as an SLA. Network latency affects results.
+- **Coverage** — additional negative and boundary scenarios remain possible extensions.
+- **Cleanup** — interrupted or partially failed runs can leave test resources requiring inspection and cleanup.
 
 ## Security
 
-- Trello API credentials are excluded from the committed collection, and local environment files are ignored by Git.
-- CI credentials and the Slack Incoming Webhook URL are stored in GitHub Actions Secrets.
-- Temporary CI environment files are generated on the runner.
-- The workflow checks JUnit XML artifacts for configured API Key and Token values before uploading.
-- Slack notifications contain test summaries rather than raw API request and response bodies.
-- Generated reports are excluded from version control.
-
-The report credential check is a targeted safeguard, not a comprehensive secret scanner.
+- Local environment files are ignored by Git.
+- CI credentials and the Slack webhook are stored in GitHub Actions Secrets.
+- CI uses `TRELLO_API_KEY`, `TRELLO_API_TOKEN`, and `SLACK_WEBHOOK_URL`.
+- The CI environment file is generated in the runner temporary directory.
+- The JUnit XML artifact is checked for configured API Key and Token values before upload. This check detects those specific values and has limited coverage.
+- Slack messages contain summaries. Generated reports are excluded from version control.

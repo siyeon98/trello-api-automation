@@ -11,6 +11,7 @@ on:
 
 jobs:
   api-tests:
+    name: API Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -99,9 +100,10 @@ jobs:
           name: newman-test-results
           path: ${{ runner.temp }}/newman-results.xml
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
 
       - name: Notify Slack
+        continue-on-error: true
         if: ${{ always() }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -110,6 +112,7 @@ jobs:
           python3 - <<'PY'
           import json
           import os
+          import urllib.error
           import urllib.request
           import xml.etree.ElementTree as ET
           from pathlib import Path
@@ -269,7 +272,8 @@ jobs:
 
           webhook = os.environ.get("SLACK_WEBHOOK_URL")
           if not webhook:
-              raise RuntimeError("SLACK_WEBHOOK_URL is not configured")
+              print("::warning::Slack notification skipped because SLACK_WEBHOOK_URL is unavailable.")
+              raise SystemExit(0)
 
           payload = {
               "text": f"{symbol} Trello API Tests — {label}",
@@ -283,10 +287,11 @@ jobs:
               method="POST"
           )
 
-          with urllib.request.urlopen(
-              request, timeout=15
-          ) as response:
-              print(
-                  f"Slack notification sent: HTTP {response.status}"
-              )
+          try:
+              with urllib.request.urlopen(request, timeout=15) as response:
+                  print(f"Slack notification sent: HTTP {response.status}")
+          except urllib.error.HTTPError as error:
+              print(f"::warning::Slack notification failed: HTTP {error.code}.")
+          except (urllib.error.URLError, TimeoutError):
+              print("::warning::Slack notification could not reach the webhook.")
           PY
